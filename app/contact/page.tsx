@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState } from "react" 
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -156,7 +155,7 @@ export default function ContactPage() {
         <section className="bg-white py-8 sm:py-12 md:py-16 lg:py-20 relative -mt-40 sm:-mt-48 md:-mt-56 lg:-mt-64 xl:-mt-72">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             {/* Contact Form Card - Responsive sizing and spacing */}
-            <div className="max-w-sm sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto bg-white rounded-2xl sm:rounded-3xl border-2 sm:border-3 md:border-4 border-black shadow-xl sm:shadow-2xl overflow-hidden animate-fade-in-up min-h-[36rem] sm:min-h-[42rem] md:min-h-[48rem] lg:min-h-[54rem]">
+            <div className="max-w-sm sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto bg-white rounded-2xl sm:rounded-3xl border-2 sm:border-3 md:border-4 border-black shadow-xl sm:shadow-2xl overflow-hidden animate-fade-in-up min-h-[32rem] sm:min-h-[36rem] md:min-h-[40rem] lg:min-h-[44rem]">
               <div className="p-6 sm:p-8 md:p-10 lg:p-12 xl:p-16 pt-12 sm:pt-16 md:pt-20 lg:pt-24 xl:pt-28">
                 {/* Responsive heading */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-akiba-pink-500 mb-6 sm:mb-8 text-center sm:text-left">
@@ -291,7 +290,7 @@ export default function ContactPage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 max-w-xs sm:max-w-2xl md:max-w-4xl lg:max-w-6xl mx-auto">
               {/* Left Box - Join the Akiba Tribe - Responsive */}
-              <Card className="bg-gray-800 text-white rounded-xl sm:rounded-2xl border-2 border-black overflow-hidden">
+              <Card className="bg-gray-800 text-white rounded-xl sm:rounded-2xl border-2 border-black overflow-hidden relative">
                 <CardContent className="p-4 sm:p-6 md:p-8 relative h-96 sm:h-112 md:h-128 lg:h-144 xl:h-160">
                   <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 leading-tight">
                     Join the Akiba Tribe
@@ -325,14 +324,19 @@ export default function ContactPage() {
                   </div>
 
                   {/* Decorative Background Element - Star touching right edge */}
-                  <div className="absolute bottom-0 right-0 w-56 sm:w-64 md:w-72 lg:w-80 xl:w-88 h-40 sm:h-44 md:h-48 lg:h-52 xl:h-56 opacity-90">
-                    <Image
-                      src="/images/solar-star-decoration.png"
-                      alt=""
-                      width={352}
-                      height={224}
-                      className="w-full h-full object-contain object-bottom-right"
-                    />
+                  <div className="absolute bottom-0 right-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 h-36 sm:h-40 md:h-44 lg:h-48 xl:h-52 opacity-90">
+                    <div className="relative w-full h-full">
+                      <Image
+                        src="/images/solar-star-decoration.png"
+                        alt=""
+                        width={320}
+                        height={208}
+                        className="w-full h-full object-contain object-right-bottom"
+                        style={{
+                          transform: 'translate(5%, 5%)'
+                        }}
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

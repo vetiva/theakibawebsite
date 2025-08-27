@@ -4,8 +4,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { getBlogPost, getRelatedPosts } from "@/lib/blog-data"
+import { getBlogPost, getRelatedPosts, urlFor, getBlogPosts } from "@/lib/sanity"
+import { fallbackBlogPosts, formatDate, type BlogPost } from "@/lib/blog-data"
 import { notFound } from "next/navigation"
+import { PortableText } from "@portabletext/react"
 
 interface BlogPostPageProps {
   params: {
@@ -13,135 +15,303 @@ interface BlogPostPageProps {
   }
 }
 
-export default function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = getBlogPost(params.slug)
+// Enhanced related posts algorithm
+const getEnhancedRelatedPosts = (currentPost: BlogPost, allPosts: BlogPost[], limit = 3) => {
+  const currentCategories = currentPost.categories?.map(cat => cat.title) || []
+  
+  return allPosts
+    .filter(post => post._id !== currentPost._id)
+    .sort((a, b) => {
+      const aCategories = a.categories?.map(cat => cat.title) || []
+      const bCategories = b.categories?.map(cat => cat.title) || []
+      
+      // Count category matches
+      const aMatch = aCategories.filter(cat => currentCategories.includes(cat)).length
+      const bMatch = bCategories.filter(cat => currentCategories.includes(cat)).length
+      
+      // If same category match count, sort by date (newest first)
+      if (bMatch === aMatch) {
+        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+      }
+      
+      return bMatch - aMatch
+    })
+    .slice(0, limit)
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  let post: BlogPost | null = null
+  let relatedPosts: BlogPost[] = []
+  let allPosts: BlogPost[] = []
+
+  try {
+    // Try to fetch from Sanity first
+    post = await getBlogPost(params.slug)
+    
+    // Fetch all posts for enhanced related posts
+    const sanityPosts = await getBlogPosts()
+    allPosts = sanityPosts?.length > 0 ? sanityPosts : fallbackBlogPosts
+
+    if (post) {
+      // Use enhanced related posts algorithm
+      relatedPosts = getEnhancedRelatedPosts(post, allPosts, 3)
+    } else {
+      // If no post found in Sanity, try fallback data
+      post = fallbackBlogPosts.find((p) => p.slug.current === params.slug) || null
+      if (post) {
+        relatedPosts = getEnhancedRelatedPosts(post, fallbackBlogPosts, 3)
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching blog post:", error)
+    // Fallback to static data
+    post = fallbackBlogPosts.find((p) => p.slug.current === params.slug) || null
+    allPosts = fallbackBlogPosts
+    if (post) {
+      relatedPosts = getEnhancedRelatedPosts(post, fallbackBlogPosts, 3)
+    }
+  }
 
   if (!post) {
     notFound()
   }
 
-  const relatedPosts = getRelatedPosts(params.slug)
+  const components = {
+    block: {
+      normal: ({ children }: any) => (
+        <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg">{children}</p>
+      ),
+      h2: ({ children }: any) => (
+        <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-akiba-pink-500 mb-3 md:mb-4 mt-6 md:mt-8">{children}</h2>
+      ),
+      h3: ({ children }: any) => (
+        <h3 className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 md:mb-3 mt-4 md:mt-6">{children}</h3>
+      ),
+    },
+    list: {
+      bullet: ({ children }: any) => (
+        <ul className="list-disc list-inside mb-4 md:mb-6 space-y-1 md:space-y-2 text-gray-700">{children}</ul>
+      ),
+      number: ({ children }: any) => (
+        <ol className="list-decimal list-inside mb-4 md:mb-6 space-y-1 md:space-y-2 text-gray-700">{children}</ol>
+      ),
+    },
+    listItem: {
+      bullet: ({ children }: any) => <li className="ml-4">{children}</li>,
+      number: ({ children }: any) => <li className="ml-4">{children}</li>,
+    },
+  }
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main>
+      <main className="overflow-x-hidden">
         {/* Blog Post Header */}
-        <section className="bg-gray-50 py-8 md:py-12">
-          <div className="container mx-auto px-4">
+        <section className="bg-gray-50 py-6 md:py-8 lg:py-12">
+          <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto">
               <Link
                 href="/blog"
-                className="inline-flex items-center text-akiba-pink-500 hover:text-akiba-pink-600 mb-8 transition-colors"
+                className="inline-flex items-center text-akiba-pink-500 hover:text-akiba-pink-600 mb-6 md:mb-8 transition-colors text-sm md:text-base"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Blog
               </Link>
 
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-akiba-pink-500 mb-6 leading-tight animate-fade-in-up">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-akiba-pink-500 mb-4 md:mb-6 leading-tight animate-fade-in-up">
                 {post.title}
               </h1>
 
-              <div className="flex items-center space-x-4 text-gray-600 mb-8 animate-fade-in-up delay-200">
-                <span className="text-sm font-medium">{post.author}</span>
-                <span className="text-sm">•</span>
-                <span className="text-sm">{post.publishedAt}</span>
-                <span className="text-sm">•</span>
-                <span className="text-sm bg-akiba-pink-100 text-akiba-pink-600 px-2 py-1 rounded-full">
-                  {post.category}
-                </span>
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-gray-600 mb-6 md:mb-8 animate-fade-in-up delay-200 text-sm md:text-base">
+                <span className="font-medium">{post.author?.name || "Akiba Team"}</span>
+                <span className="hidden md:inline">•</span>
+                <span>{formatDate(post.publishedAt)}</span>
+                {post.categories && post.categories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
+                    {post.categories.map((category, index) => (
+                      <span
+                        key={category._id || index}
+                        className="bg-akiba-pink-100 text-akiba-pink-600 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm"
+                      >
+                        {category.title}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </section>
 
         {/* Featured Image */}
-        <section className="bg-white py-8">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="aspect-video relative rounded-2xl overflow-hidden shadow-lg animate-fade-in-up delay-300">
-                <Image src={post.featuredImage || "/placeholder.svg"} alt={post.title} fill className="object-cover" />
+        {post.mainImage && (
+          <section className="bg-white py-6 md:py-8">
+            <div className="container mx-auto px-4 md:px-6">
+              <div className="max-w-4xl mx-auto">
+                <div className="aspect-video md:aspect-[16/9] relative rounded-xl md:rounded-2xl overflow-hidden shadow-lg animate-fade-in-up delay-300">
+                  <Image
+                    src={urlFor(post.mainImage).width(1200).height(675).quality(80).url() || "/placeholder.svg"}
+                    alt={post.title}
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
+                    placeholder="blur"
+                    blurDataURL={urlFor(post.mainImage).width(20).height(11).quality(30).url() || "/placeholder.svg"}
+                  />
+                </div>
+                {post.mainImage.attribution && (
+                  <div className="mt-2 text-xs text-gray-500 text-right">
+                    {post.mainImage.attribution}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Blog Content */}
-        <section className="bg-white py-8 md:py-12">
-          <div className="container mx-auto px-4">
+        <section className="bg-white py-6 md:py-8 lg:py-12">
+          <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto">
-              <div className="prose prose-lg max-w-none animate-fade-in-up delay-400">
-                {post.content.split("\n\n").map((paragraph, index) => {
-                  // Insert image after certain paragraphs if available
-                  const shouldInsertImage = index === 2 && post.images && post.images.length > 0
+              <div className="prose prose-sm md:prose-base lg:prose-lg max-w-none animate-fade-in-up delay-400">
+                {post.body ? (
+                  <PortableText value={post.body} components={components} />
+                ) : post.excerpt ? (
+                  <>
+                    <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg font-semibold">
+                      {post.excerpt}
+                    </p>
+                    {post.content?.split("\n\n").map((paragraph, index) => (
+                      <p key={index} className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </>
+                ) : (
+                  post.content?.split("\n\n").map((paragraph, index) => (
+                    <p key={index} className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg">
+                      {paragraph}
+                    </p>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
 
-                  return (
-                    <div key={index}>
-                      <p className="text-gray-700 leading-relaxed mb-6 text-base md:text-lg">{paragraph}</p>
+        {/* Related Blogs Section - Enhanced */}
+        {relatedPosts.length > 0 && (
+          <section className="bg-gray-50 py-8 md:py-12 lg:py-16">
+            <div className="container mx-auto px-4 md:px-6">
+              <div className="max-w-6xl mx-auto">
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-akiba-pink-500 mb-6 md:mb-8 text-center animate-fade-in-up">
+                  You Might Also Like
+                </h2>
 
-                      {shouldInsertImage && (
-                        <div className="my-12">
-                          <div className="aspect-video relative rounded-2xl overflow-hidden shadow-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                  {relatedPosts.map((relatedPost, index) => (
+                    <Card
+                      key={relatedPost._id}
+                      className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-0 h-full flex flex-col animate-fade-in-up"
+                      style={{ animationDelay: `${(index + 1) * 100}ms` }}
+                    >
+                      <CardContent className="p-0 h-full flex flex-col">
+                        <Link href={`/blog/${relatedPost.slug.current}`} className="flex flex-col h-full">
+                          <div className="aspect-video relative flex-shrink-0">
                             <Image
-                              src={post.images[0] || "/placeholder.svg"}
-                              alt="Blog illustration"
+                              src={
+                                relatedPost.mainImage
+                                  ? urlFor(relatedPost.mainImage).width(600).height(338).quality(70).url()
+                                  : "/images/blog-tech-illustration.png"
+                              }
+                              alt={relatedPost.title}
                               fill
-                              className="object-cover"
+                              className="object-cover hover:scale-105 transition-transform duration-300"
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              placeholder="blur"
+                              blurDataURL={
+                                relatedPost.mainImage
+                                  ? urlFor(relatedPost.mainImage).width(60).height(34).quality(30).url()
+                                  : "/images/blog-tech-illustration.png"
+                              }
                             />
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
+                          <div className="p-4 md:p-6 lg:p-8 flex flex-col flex-grow">
+                            <div className="flex-grow">
+                              <h3 className="text-lg md:text-xl font-bold text-akiba-pink-500 mb-3 md:mb-4 leading-tight hover:text-akiba-pink-600 transition-colors line-clamp-2">
+                                {relatedPost.title}
+                              </h3>
+                              <p className="text-gray-600 text-sm md:text-base mb-4 md:mb-6 leading-relaxed line-clamp-3">
+                                {relatedPost.excerpt || "Read more about this topic..."}
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center mt-auto pt-2 md:pt-4">
+                              <p className="text-gray-400 text-xs md:text-sm">
+                                {formatDate(relatedPost.publishedAt)}
+                              </p>
+                              <span className="text-akiba-pink-500 hover:text-akiba-pink-600 text-xs md:text-sm font-medium transition-colors">
+                                Read More →
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Related Blogs Section */}
-        <section className="bg-gray-50 py-12 md:py-16">
-          <div className="container mx-auto px-4">
-            <div className="max-w-6xl mx-auto">
-              <h2 className="text-2xl md:text-3xl font-bold text-akiba-pink-500 mb-8 animate-fade-in-up">
-                Related Blogs
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {relatedPosts.map((relatedPost, index) => (
-                  <Card
-                    key={relatedPost.id}
-                    className={`bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up delay-${(index + 1) * 100}`}
-                  >
-                    <CardContent className="p-0">
-                      <Link href={`/blog/${relatedPost.slug}`}>
-                        <div className="aspect-video relative">
-                          <Image
-                            src={relatedPost.featuredImage || "/placeholder.svg"}
-                            alt={relatedPost.title}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="p-6 md:p-8">
-                          <h3 className="text-xl md:text-2xl font-bold text-akiba-pink-500 mb-4 leading-tight hover:text-akiba-pink-600 transition-colors">
-                            {relatedPost.title}
-                          </h3>
-                          <p className="text-gray-600 text-sm md:text-base mb-6 leading-relaxed">
-                            {relatedPost.excerpt}
-                          </p>
-                          <p className="text-gray-400 text-sm">{relatedPost.publishedAt}</p>
-                        </div>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
       <Footer />
     </div>
   )
+}
+
+// Generate static params for better performance
+export async function generateStaticParams() {
+  try {
+    const posts = await getBlogPosts()
+    const slugs = posts?.map((post) => ({
+      slug: post.slug.current,
+    })) || []
+    
+    return slugs
+  } catch (error) {
+    console.error("Error generating static params:", error)
+    return fallbackBlogPosts.map((post) => ({
+      slug: post.slug.current,
+    }))
+  }
+}
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: BlogPostPageProps) {
+  let post: BlogPost | null = null
+  
+  try {
+    post = await getBlogPost(params.slug) || fallbackBlogPosts.find(p => p.slug.current === params.slug) || null
+  } catch (error) {
+    post = fallbackBlogPosts.find(p => p.slug.current === params.slug) || null
+  }
+
+  if (!post) {
+    return {
+      title: "Post Not Found - Akiba Finance Blog",
+    }
+  }
+
+  return {
+    title: `${post.title} - Akiba Finance Blog`,
+    description: post.excerpt || "Discover insights and tips from Akiba Finance",
+    openGraph: {
+      title: post.title,
+      description: post.excerpt || "Discover insights and tips from Akiba Finance",
+      images: post.mainImage ? [urlFor(post.mainImage).width(1200).height(630).quality(80).url()] : [],
+      type: 'article',
+      publishedTime: post.publishedAt,
+    },
+  }
 }

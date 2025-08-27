@@ -5,241 +5,260 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { getPaginatedPosts, getFeaturedPost } from "@/lib/blog-data"
+import { getBlogPosts, urlFor } from "@/lib/sanity"
+import { fallbackBlogPosts, POSTS_PER_PAGE, formatDate, type BlogPost } from "@/lib/blog-data"
 
 interface BlogPageProps {
   searchParams: { page?: string }
 }
 
-export default function BlogPage({ searchParams }: BlogPageProps) {
+export default async function BlogPage({ searchParams }: BlogPageProps) {
   const currentPage = Number(searchParams.page) || 1
-  const featuredPost = getFeaturedPost()
-  const { posts, totalPages, hasNextPage, hasPrevPage } = getPaginatedPosts(currentPage)
+  let allPosts: BlogPost[] = []
+  let featuredPost: BlogPost | null = null
+  let posts: BlogPost[] = []
+  let totalPages = 1
+  let hasNextPage = false
+  let hasPrevPage = false
+
+  try {
+    const sanityPosts = await getBlogPosts()
+    allPosts = sanityPosts?.length > 0 ? sanityPosts : fallbackBlogPosts
+  } catch (error) {
+    console.error("Error fetching posts:", error)
+    allPosts = fallbackBlogPosts
+  }
+
+  // Sort posts by date (newest first)
+  const sortedPosts = [...allPosts].sort((a, b) => 
+    new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  )
+
+  // Set featured post (only used on first page) - always the latest post
+  featuredPost = currentPage === 1 ? sortedPosts[0] || null : null
+
+  // Get posts for current page - different logic for page 1 vs other pages
+  let postsToDisplay: BlogPost[] = []
+  let actualPostsPerPage = POSTS_PER_PAGE
+
+  if (currentPage === 1) {
+    // Page 1: Show featured post + up to 6 grid posts
+    postsToDisplay = sortedPosts.slice(1) // Remove featured post for grid
+    actualPostsPerPage = 6 // Show 6 grid posts on page 1
+  } else {
+    // Other pages: Show regular posts
+    postsToDisplay = [...sortedPosts]
+    actualPostsPerPage = 6 // Show 6 posts on other pages
+  }
+
+  totalPages = Math.ceil((currentPage === 1 ? sortedPosts.length - 1 : sortedPosts.length) / actualPostsPerPage)
+  const startIndex = (currentPage - 1) * actualPostsPerPage
+  const endIndex = startIndex + actualPostsPerPage
+  posts = postsToDisplay.slice(startIndex, endIndex)
+
+  hasNextPage = currentPage < totalPages
+  hasPrevPage = currentPage > 1
+
+  const getExcerpt = (post: BlogPost, maxSentences = 2) => {
+    if (post.excerpt?.trim()) return post.excerpt.trim()
+    
+    if (post.body) {
+      const text = typeof post.body === "string" 
+        ? post.body 
+        : post.body.map((b: any) => b.children?.map((c: any) => c.text).join(" ")).join(" ")
+      return text
+        .replace(/[#*`]/g, "")
+        .trim()
+        .split(/(?<=[.?!])\s+/)
+        .slice(0, maxSentences)
+        .join(" ")
+    }
+    return ""
+  }
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      
       <main>
-        {/* Hero Section with Clouds */}
-        <section className="bg-gray-50 py-16 md:py-24 relative overflow-hidden">
-          {/* Decorative cloud elements - strategically positioned */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Top clouds */}
-            <div className="absolute top-8 left-8 w-32 h-16 opacity-70">
-              <Image
-                src="/images/cloud-1.png"
-                alt=""
-                width={128}
-                height={64}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="absolute top-4 right-12 w-36 h-18 opacity-65">
-              <Image
-                src="/images/cloud-2.png"
-                alt=""
-                width={144}
-                height={72}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="absolute top-12 left-1/4 w-28 h-14 opacity-60">
-              <Image
-                src="/images/cloud-3.png"
-                alt=""
-                width={112}
-                height={56}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="absolute top-16 right-1/4 w-32 h-16 opacity-75">
-              <Image
-                src="/images/cloud-4.png"
-                alt=""
-                width={128}
-                height={64}
-                className="w-full h-full object-contain"
-              />
-            </div>
-
-            {/* Bottom clouds */}
-            <div className="absolute bottom-8 left-16 w-24 h-12 opacity-65">
-              <Image src="/images/cloud-1.png" alt="" width={96} height={48} className="w-full h-full object-contain" />
-            </div>
-            <div className="absolute bottom-12 right-20 w-28 h-14 opacity-70">
-              <Image
-                src="/images/cloud-2.png"
-                alt=""
-                width={112}
-                height={56}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="absolute bottom-16 left-1/3 w-20 h-10 opacity-55">
-              <Image src="/images/cloud-3.png" alt="" width={80} height={40} className="w-full h-full object-contain" />
-            </div>
-            <div className="absolute bottom-4 right-1/3 w-24 h-12 opacity-80">
-              <Image src="/images/cloud-4.png" alt="" width={96} height={48} className="w-full h-full object-contain" />
-            </div>
-          </div>
-
+        {/* Hero Section */}
+        <section className="bg-gray-50 py-16 md:py-20 relative overflow-hidden">
           <div className="container mx-auto px-4 text-center relative z-10">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-akiba-pink-500 mb-6 animate-fade-in-up">
-              Blog
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-akiba-pink-500 mb-6">
+              Akiba Finance Blog
             </h1>
-            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto animate-fade-in-up delay-200">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-              dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Smart insights for smarter financial decisions. Discover expert advice, 
+              market trends, and practical tips for your financial journey.
             </p>
           </div>
         </section>
 
-        {/* Featured Article Section */}
+        {/* Featured Post (Only on Page 1) - Latest post */}
+        {currentPage === 1 && featuredPost && (
+          <section className="bg-white py-12 md:py-16">
+            <div className="container mx-auto px-4">
+              <div className="max-w-6xl mx-auto">
+                <Card className="bg-gray-800 text-white rounded-2xl overflow-hidden shadow-xl">
+                  <CardContent className="p-0">
+                    <div className="grid md:grid-cols-2 gap-0 min-h-[400px]">
+                      <div className="p-8 md:p-12 flex flex-col justify-between">
+                        <div>
+                          {featuredPost.categories?.[0]?.title && (
+                            <span className="text-akiba-pink-500 text-sm font-medium uppercase tracking-wide mb-4 block">
+                              {featuredPost.categories[0].title}
+                            </span>
+                          )}
+                          <Link href={`/blog/${featuredPost.slug.current}`}>
+                            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight hover:text-akiba-pink-100 transition-colors">
+                              {featuredPost.title}
+                            </h2>
+                            <p className="text-gray-300 text-base md:text-lg mb-8 leading-relaxed">
+                              {getExcerpt(featuredPost)}
+                            </p>
+                          </Link>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-gray-400 text-sm">
+                            {formatDate(featuredPost.publishedAt)}
+                          </p>
+                          <Button asChild variant="link" className="text-akiba-pink-500 hover:text-akiba-pink-600 p-0 h-auto">
+                            <Link href={`/blog/${featuredPost.slug.current}`}>
+                              Read More →
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="relative min-h-[300px] md:min-h-[400px]">
+                        <Link href={`/blog/${featuredPost.slug.current}`}>
+                          <Image
+                            src={featuredPost.mainImage 
+                              ? urlFor(featuredPost.mainImage).width(600).height(400).url() 
+                              : "/images/blog-financial-abstract.png"}
+                            alt={featuredPost.title}
+                            fill
+                            className="object-cover hover:scale-105 transition-transform duration-500"
+                          />
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Blog Grid */}
         <section className="bg-white py-12 md:py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              <Card className="bg-gray-800 text-white rounded-2xl border-2 border-black overflow-hidden shadow-2xl animate-fade-in-up">
-                <CardContent className="p-0">
-                  <Link href={`/blog/${featuredPost?.slug}`}>
-                    <div className="grid md:grid-cols-2 gap-0 min-h-[400px] cursor-pointer group">
-                      {/* Left Content */}
-                      <div className="p-8 md:p-12 flex flex-col justify-between">
-                        <div>
-                          <span className="text-akiba-pink-500 text-sm font-semibold uppercase tracking-wide mb-4 block">
-                            {featuredPost?.category}
-                          </span>
-                          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight group-hover:text-akiba-pink-100 transition-colors">
-                            {featuredPost?.title}
-                          </h2>
-                          <p className="text-gray-300 text-base md:text-lg mb-8 leading-relaxed">
-                            {featuredPost?.excerpt}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400 text-sm">{featuredPost?.publishedAt}</p>
-                        </div>
-                      </div>
-
-                      {/* Right Image */}
-                      <div className="relative min-h-[300px] md:min-h-[400px]">
-                        <Image
-                          src={featuredPost?.featuredImage || "/placeholder.svg"}
-                          alt={featuredPost?.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Blog Grid Section */}
-        <section className="bg-gray-50 py-12 md:py-16">
-          <div className="container mx-auto px-4">
-            <div className="max-w-6xl mx-auto">
               {posts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {posts.map((post, index) => (
-                    <Card
-                      key={post.id}
-                      className={`bg-white rounded-2xl border-2 border-black overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up delay-${(index + 1) * 100}`}
+                    <Card 
+                      key={post._id} 
+                      className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] border-0 h-full flex flex-col"
                     >
-                      <CardContent className="p-0">
-                        <Link href={`/blog/${post.slug}`}>
-                          <div className="aspect-video relative">
-                            <Image
-                              src={post.featuredImage || "/placeholder.svg"}
-                              alt={post.title}
-                              fill
-                              className="object-cover transition-transform duration-500 hover:scale-105"
-                            />
-                          </div>
-                          <div className="p-6 md:p-8">
-                            <h3 className="text-xl md:text-2xl font-bold text-akiba-pink-500 mb-4 leading-tight hover:text-akiba-pink-600 transition-colors">
+                      <div className="aspect-video relative flex-shrink-0">
+                        <Link href={`/blog/${post.slug.current}`}>
+                          <Image
+                            src={post.mainImage 
+                              ? urlFor(post.mainImage).width(400).height(225).url()
+                              : `/images/blog-${(index % 6) + 1}.png`}
+                            alt={post.title}
+                            fill
+                            className="object-cover hover:scale-105 transition-transform duration-300"
+                          />
+                        </Link>
+                      </div>
+                      <CardContent className="p-6 md:p-8 flex flex-col flex-grow">
+                        <div className="flex-grow">
+                          <Link href={`/blog/${post.slug.current}`}>
+                            <h3 className="text-xl md:text-2xl font-bold text-akiba-pink-500 mb-4 leading-tight hover:text-akiba-pink-600 transition-colors line-clamp-2">
                               {post.title}
                             </h3>
-                            <p className="text-gray-600 text-sm md:text-base mb-6 leading-relaxed">{post.excerpt}</p>
-                            <p className="text-gray-400 text-sm">{post.publishedAt}</p>
-                          </div>
-                        </Link>
+                            <p className="text-gray-600 text-sm md:text-base mb-6 leading-relaxed line-clamp-3">
+                              {getExcerpt(post)}
+                            </p>
+                          </Link>
+                        </div>
+                        <div className="flex justify-between items-center mt-auto pt-4">
+                          <p className="text-gray-400 text-sm">
+                            {formatDate(post.publishedAt)}
+                          </p>
+                          <Button asChild variant="link" className="text-akiba-pink-500 hover:text-akiba-pink-600 p-0 h-auto">
+                            <Link href={`/blog/${post.slug.current}`}>
+                              Read More →
+                            </Link>
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">No posts found on this page.</p>
-                  <Link href="/blog">
-                    <Button className="mt-4 bg-akiba-pink-500 hover:bg-akiba-pink-600 text-white">
-                      Back to First Page
-                    </Button>
-                  </Link>
+                  <p className="text-gray-500 text-lg">No posts found</p>
                 </div>
               )}
             </div>
           </div>
         </section>
 
-        {/* Pagination Section - Replace the existing one */}
-        <section className="bg-white py-8 md:py-12">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-center">
-              <div className="flex items-center space-x-2">
-                {/* Previous Button */}
-                <Link href={hasPrevPage ? `/blog?page=${currentPage - 1}` : "#"}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`w-8 h-8 p-0 ${!hasPrevPage ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-600"}`}
-                    disabled={!hasPrevPage}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                </Link>
-
-                {/* Page Numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                  <Link key={pageNum} href={`/blog?page=${pageNum}`}>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <section className="bg-white py-8 md:py-12">
+            <div className="container mx-auto px-4">
+              <div className="flex justify-center">
+                <nav className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 shadow-sm">
+                  <Link href={hasPrevPage ? `/blog?page=${currentPage - 1}` : "#"} passHref>
                     <Button
+                      variant="ghost"
                       size="sm"
-                      className={`w-8 h-8 p-0 border border-black ${
-                        currentPage === pageNum
-                          ? "bg-akiba-pink-500 hover:bg-akiba-pink-600 text-white border-black"
-                          : "bg-transparent text-gray-600 hover:text-akiba-pink-500 hover:bg-akiba-pink-50 border-black"
+                      className={`w-10 h-10 p-0 rounded-md ${
+                        !hasPrevPage ? "text-gray-300 cursor-not-allowed" : "text-gray-600 hover:text-akiba-pink-500"
                       }`}
+                      disabled={!hasPrevPage}
                     >
-                      {pageNum}
+                      <ChevronLeft className="w-5 h-5" />
                     </Button>
                   </Link>
-                ))}
-
-                {/* Next Button */}
-                <Link href={hasNextPage ? `/blog?page=${currentPage + 1}` : "#"}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`w-8 h-8 p-0 ${!hasNextPage ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-600"}`}
-                    disabled={!hasNextPage}
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </Link>
+                  
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <Link key={i} href={`/blog?page=${i + 1}`} passHref>
+                      <Button
+                        size="sm"
+                        className={`w-10 h-10 p-0 rounded-md text-sm font-medium ${
+                          currentPage === i + 1
+                            ? "bg-akiba-pink-500 text-white shadow-sm"
+                            : "bg-white text-gray-700 hover:bg-gray-200 border"
+                        }`}
+                      >
+                        {i + 1}
+                      </Button>
+                    </Link>
+                  ))}
+                  
+                  <Link href={hasNextPage ? `/blog?page=${currentPage + 1}` : "#"} passHref>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`w-10 h-10 p-0 rounded-md ${
+                        !hasNextPage ? "text-gray-300 cursor-not-allowed" : "text-gray-600 hover:text-akiba-pink-500"
+                      }`}
+                      disabled={!hasNextPage}
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                  </Link>
+                </nav>
               </div>
             </div>
-
-            {/* Page Info */}
-            <div className="text-center mt-4">
-              <p className="text-sm text-gray-500">
-                Page {currentPage} of {totalPages} • Showing {posts.length} posts
-              </p>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
+
       <Footer />
     </div>
   )
