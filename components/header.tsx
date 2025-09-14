@@ -1,14 +1,17 @@
 "use client"
-
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowDownCircleIcon, Menu, X } from "lucide-react"
-import { useState, useEffect } from "react"
+import { ArrowDownCircleIcon, Menu, X, ExternalLink } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isAppMenuOpen, setIsAppMenuOpen] = useState(false)
+  const [isMobileAppMenuOpen, setIsMobileAppMenuOpen] = useState(false)
+  const appMenuRef = useRef(null)
+  const mobileAppMenuRef = useRef(null)
 
   // Handle scroll effect for header
   useEffect(() => {
@@ -19,15 +22,29 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const scrollToDownloadButtons = () => {
-    const downloadSection = document.getElementById("download-buttons")
-    if (downloadSection) {
-      downloadSection.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      })
+  // Close app menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (appMenuRef.current && !appMenuRef.current.contains(event.target)) {
+        setIsAppMenuOpen(false)
+      }
+      if (mobileAppMenuRef.current && !mobileAppMenuRef.current.contains(event.target)) {
+        setIsMobileAppMenuOpen(false)
+      }
     }
-    setIsMenuOpen(false)
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const toggleAppMenu = () => {
+    setIsAppMenuOpen(!isAppMenuOpen)
+  }
+
+  const toggleMobileAppMenu = () => {
+    setIsMobileAppMenuOpen(!isMobileAppMenuOpen)
   }
 
   return (
@@ -76,18 +93,6 @@ export function Header() {
                   >
                     Blog
                   </Link>
-                  <Link
-                    href="/lifestyle"
-                    className="block px-4 py-2 text-gray-700 hover:bg-akiba-pink-50 hover:text-akiba-pink-500 transition-all duration-200 text-sm"
-                  >
-                    Lifestyle
-                  </Link>
-                  <Link
-                    href="/research"
-                    className="block px-4 py-2 text-gray-700 hover:bg-akiba-pink-50 hover:text-akiba-pink-500 transition-all duration-200 text-sm"
-                  >
-                    Research
-                  </Link>
                 </div>
               </div>
             </div>
@@ -107,22 +112,83 @@ export function Header() {
 
           {/* CTA Button and Mobile Menu */}
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <Button
-              onClick={scrollToDownloadButtons}
-              className="hidden sm:flex bg-akiba-orange-500 hover:bg-akiba-orange-600 text-white px-4 sm:px-5 py-2 rounded-lg transition-all duration-300 hover:scale-105 text-xs sm:text-sm font-medium cursor-pointer shadow-sm"
-            >
-              Get the App
-            </Button>
+            {/* Desktop App Dropdown */}
+            <div className="relative hidden sm:block" ref={appMenuRef}>
+              <Button
+                onClick={toggleAppMenu}
+                className="bg-akiba-orange-500 hover:bg-akiba-orange-600 text-white px-4 sm:px-5 py-2 rounded-lg transition-all duration-300 hover:scale-105 text-xs sm:text-sm font-medium cursor-pointer shadow-sm flex items-center gap-1"
+              >
+                Get the App
+                <ArrowDownCircleIcon className={`w-4 h-4 transition-transform duration-300 ${isAppMenuOpen ? 'rotate-180' : ''}`} />
+              </Button>
+              
+              {/* App Store Dropdown */}
+              {isAppMenuOpen && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200 overflow-hidden">
+                  <div className="py-2">
+                    <a
+                      href="https://play.google.com/store/apps/details?id=com.akiba.by_vetiva2"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center px-4 py-3 text-gray-700 hover:bg-akiba-pink-50 hover:text-akiba-pink-500 transition-all duration-200 text-sm"
+                      onClick={() => setIsAppMenuOpen(false)}
+                    >
+                      <span>Google Play Store</span>
+                      <ExternalLink className="w-3 h-3 ml-2" />
+                    </a>
+                    <a
+                      href="https://apps.apple.com/us/app/akiba-app/id6471265552"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center px-4 py-3 text-gray-700 hover:bg-akiba-pink-50 hover:text-akiba-pink-500 transition-all duration-200 text-sm border-t border-gray-100"
+                      onClick={() => setIsAppMenuOpen(false)}
+                    >
+                      <span>Apple App Store</span>
+                      <ExternalLink className="w-3 h-3 ml-2" />
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
             
-            {/* Mobile CTA - visible only on small screens */}
-            <Button
-              onClick={scrollToDownloadButtons}
-              className="sm:hidden bg-akiba-orange-500 hover:bg-akiba-orange-600 text-white p-2 rounded-lg transition-all duration-300 text-xs font-medium cursor-pointer shadow-sm"
-              size="icon"
-            >
-              <span className="sr-only">Get the App</span>
-              <ArrowDownCircleIcon className="h-4 w-4" />
-            </Button>
+            {/* Mobile App Dropdown */}
+            <div className="relative sm:hidden" ref={mobileAppMenuRef}>
+              <Button
+                onClick={toggleMobileAppMenu}
+                className="bg-akiba-orange-500 hover:bg-akiba-orange-600 text-white p-2 rounded-lg transition-all duration-300 text-xs font-medium cursor-pointer shadow-sm"
+                size="icon"
+              >
+                <ArrowDownCircleIcon className={`h-4 w-4 transition-transform duration-300 ${isMobileAppMenuOpen ? 'rotate-180' : ''}`} />
+              </Button>
+              
+              {/* Mobile App Store Dropdown */}
+              {isMobileAppMenuOpen && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200 overflow-hidden">
+                  <div className="py-2">
+                    <a
+                      href="https://play.google.com/store/apps/details?id=com.akiba.by_vetiva2"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center px-4 py-3 text-gray-700 hover:bg-akiba-pink-50 hover:text-akiba-pink-500 transition-all duration-200 text-sm"
+                      onClick={() => setIsMobileAppMenuOpen(false)}
+                    >
+                      <span>Google Play Store</span>
+                      <ExternalLink className="w-3 h-3 ml-2" />
+                    </a>
+                    <a
+                      href="https://apps.apple.com/us/app/akiba-app/id6471265552"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center px-4 py-3 text-gray-700 hover:bg-akiba-pink-50 hover:text-akiba-pink-500 transition-all duration-200 text-sm border-t border-gray-100"
+                      onClick={() => setIsMobileAppMenuOpen(false)}
+                    >
+                      <span>Apple App Store</span>
+                      <ExternalLink className="w-3 h-3 ml-2" />
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
             <button
@@ -170,20 +236,6 @@ export function Header() {
                 >
                   Blog
                 </Link>
-                <Link
-                  href="/lifestyle"
-                  className="block text-gray-600 hover:text-akiba-pink-500 transition-colors duration-300 py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Lifestyle
-                </Link>
-                <Link
-                  href="/research"
-                  className="block text-gray-600 hover:text-akiba-pink-500 transition-colors duration-300 py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Research
-                </Link>
               </div>
             </div>
             
@@ -203,13 +255,29 @@ export function Header() {
               Contact
             </Link>
             
-            {/* Mobile-only CTA button */}
-            <Button
-              onClick={scrollToDownloadButtons}
-              className="w-full mt-4 bg-akiba-orange-500 hover:bg-akiba-orange-600 text-white py-3 rounded-lg transition-all duration-300 text-sm font-medium cursor-pointer shadow-sm"
-            >
-              Get the Akiba App
-            </Button>
+            {/* Mobile app store links in menu */}
+            <div className="pt-4 border-t border-gray-200 mt-4">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.akiba.by_vetiva2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between text-gray-700 hover:text-akiba-pink-500 transition-colors duration-300 py-3 px-4 font-medium rounded-md hover:bg-gray-100"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span>Google Play Store</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+              <a
+                href="https://apps.apple.com/us/app/akiba-app/id6471265552"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between text-gray-700 hover:text-akiba-pink-500 transition-colors duration-300 py-3 px-4 font-medium rounded-md hover:bg-gray-100 border-t border-gray-100"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span>Apple App Store</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
           </nav>
         </div>
       </div>

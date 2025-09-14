@@ -9,11 +9,14 @@ import { getBlogPosts, urlFor } from "@/lib/sanity"
 import { fallbackBlogPosts, POSTS_PER_PAGE, formatDate, type BlogPost } from "@/lib/blog-data"
 
 interface BlogPageProps {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string }>
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  const currentPage = Number(searchParams.page) || 1
+  // Await the searchParams promise first
+  const params = await searchParams
+  const currentPage = Number(params.page) || 1
+  
   let allPosts: BlogPost[] = []
   let featuredPost: BlogPost | null = null
   let posts: BlogPost[] = []

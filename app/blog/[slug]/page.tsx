@@ -10,9 +10,9 @@ import { notFound } from "next/navigation"
 import { PortableText } from "@portabletext/react"
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 // Enhanced related posts algorithm
@@ -40,13 +40,17 @@ const getEnhancedRelatedPosts = (currentPost: BlogPost, allPosts: BlogPost[], li
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  // Await the params promise first
+  const resolvedParams = await params
+  const { slug } = resolvedParams
+  
   let post: BlogPost | null = null
   let relatedPosts: BlogPost[] = []
   let allPosts: BlogPost[] = []
 
   try {
     // Try to fetch from Sanity first
-    post = await getBlogPost(params.slug)
+    post = await getBlogPost(slug)
     
     // Fetch all posts for enhanced related posts
     const sanityPosts = await getBlogPosts()
@@ -57,7 +61,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       relatedPosts = getEnhancedRelatedPosts(post, allPosts, 3)
     } else {
       // If no post found in Sanity, try fallback data
-      post = fallbackBlogPosts.find((p) => p.slug.current === params.slug) || null
+      post = fallbackBlogPosts.find((p) => p.slug.current === slug) || null
       if (post) {
         relatedPosts = getEnhancedRelatedPosts(post, fallbackBlogPosts, 3)
       }
@@ -65,7 +69,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   } catch (error) {
     console.error("Error fetching blog post:", error)
     // Fallback to static data
-    post = fallbackBlogPosts.find((p) => p.slug.current === params.slug) || null
+    post = fallbackBlogPosts.find((p) => p.slug.current === slug) || null
     allPosts = fallbackBlogPosts
     if (post) {
       relatedPosts = getEnhancedRelatedPosts(post, fallbackBlogPosts, 3)
@@ -289,12 +293,16 @@ export async function generateStaticParams() {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: BlogPostPageProps) {
+  // Await the params promise first
+  const resolvedParams = await params
+  const { slug } = resolvedParams
+  
   let post: BlogPost | null = null
   
   try {
-    post = await getBlogPost(params.slug) || fallbackBlogPosts.find(p => p.slug.current === params.slug) || null
+    post = await getBlogPost(slug) || fallbackBlogPosts.find(p => p.slug.current === slug) || null
   } catch (error) {
-    post = fallbackBlogPosts.find(p => p.slug.current === params.slug) || null
+    post = fallbackBlogPosts.find(p => p.slug.current === slug) || null
   }
 
   if (!post) {

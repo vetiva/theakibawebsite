@@ -168,6 +168,22 @@ export function Footer() {
             independent investment advice before making investment decisions.
           </p>
           
+          {/* Legal Links */}
+          <div className="flex justify-center md:justify-start space-x-6 mt-4">
+            <Link
+              href="/terms-of-use"
+              className="text-white hover:text-pink-200 transition-colors font-jakarta-medium text-sm"
+            >
+              Terms of Use
+            </Link>
+            <Link
+              href="/privacy-policy"
+              className="text-white hover:text-pink-200 transition-colors font-jakarta-medium text-sm"
+            >
+              Privacy Policy
+            </Link>
+          </div>
+          
           {/* Copyright */}
           <p className="text-center mt-4 text-white/80 font-jakarta-regular text-sm">
             © {new Date().getFullYear()} Akiba Tribe. All rights reserved.
