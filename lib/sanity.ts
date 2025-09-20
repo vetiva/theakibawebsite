@@ -33,7 +33,14 @@ export async function getBlogPosts() {
           title
         },
         mainImage,
-        body
+        likeCount,
+        body[]{
+          ...,
+          _type == "image" => {
+            ...,
+            asset->
+          }
+        }
       }
     `)
   } catch (error) {
@@ -60,7 +67,14 @@ export async function getBlogPost(slug: string) {
           title
         },
         mainImage,
-        body
+        likeCount,
+        body[]{
+          ...,
+          _type == "image" => {
+            ...,
+            asset->
+          }
+        }
       }
     `,
       { slug },
@@ -89,7 +103,15 @@ export async function getRelatedPosts(currentSlug: string, categories: string[],
         categories[]->{
           title
         },
-        mainImage
+        mainImage,
+        likeCount,
+        body[]{
+          ...,
+          _type == "image" => {
+            ...,
+            asset->
+          }
+        }
       }
     `,
       { currentSlug, categories, limit },
@@ -113,23 +135,31 @@ export async function getRelatedPosts(currentSlug: string, categories: string[],
           categories[]->{
             title
           },
-          mainImage
+          mainImage,
+          likeCount,
+          body[]{
+            ...,
+            _type == "image" => {
+              ...,
+              asset->
+            }
+          }
         }
       `,
-        { 
-          currentSlug, 
+        {
+          currentSlug,
           remaining,
-          existingIds: categoryMatches.map((post: any) => post._id) 
+          existingIds: categoryMatches.map((post: any) => post._id)
         },
       )
-      
+
       return [...categoryMatches, ...latestPosts]
     }
 
     return categoryMatches
   } catch (error) {
     console.error("Error fetching related posts from Sanity:", error)
-    
+
     // Fallback: get latest posts
     try {
       return await client.fetch(
@@ -147,7 +177,15 @@ export async function getRelatedPosts(currentSlug: string, categories: string[],
           categories[]->{
             title
           },
-          mainImage
+          mainImage,
+          likeCount,
+          body[]{
+            ...,
+            _type == "image" => {
+              ...,
+              asset->
+            }
+          }
         }
       `,
         { currentSlug, limit },
@@ -177,7 +215,14 @@ export async function getAllBlogPosts() {
           title
         },
         mainImage,
-        body
+        likeCount,
+        body[]{
+          ...,
+          _type == "image" => {
+            ...,
+            asset->
+          }
+        }
       }
     `)
   } catch (error) {

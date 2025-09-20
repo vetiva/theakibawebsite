@@ -7,6 +7,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { getBlogPosts, urlFor } from "@/lib/sanity"
 import { fallbackBlogPosts, POSTS_PER_PAGE, formatDate, type BlogPost } from "@/lib/blog-data"
+import { BlogCardActions } from "@/components/blog-card-actions"
+import { FeaturedPostActions } from "@/components/featured-post-actions"
 
 interface BlogPageProps {
   searchParams: Promise<{ page?: string }>
@@ -131,6 +133,15 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                             </Link>
                           </Button>
                         </div>
+                        <div className="mt-6 pt-6 border-t border-gray-600">
+                          <FeaturedPostActions
+                            postId={featuredPost._id}
+                            title={featuredPost.title}
+                            slug={featuredPost.slug.current}
+                            description={getExcerpt(featuredPost)}
+                            initialLikeCount={featuredPost.likeCount}
+                          />
+                        </div>
                       </div>
                       <div className="relative min-h-[300px] md:min-h-[400px]">
                         <Link href={`/blog/${featuredPost.slug.current}`}>
@@ -196,6 +207,13 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                             </Link>
                           </Button>
                         </div>
+                        <BlogCardActions
+                          postId={post._id}
+                          title={post.title}
+                          slug={post.slug.current}
+                          description={getExcerpt(post)}
+                          initialLikeCount={post.likeCount}
+                        />
                       </CardContent>
                     </Card>
                   ))}

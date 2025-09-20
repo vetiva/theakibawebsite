@@ -8,6 +8,9 @@ import { getBlogPost, getRelatedPosts, urlFor, getBlogPosts } from "@/lib/sanity
 import { fallbackBlogPosts, formatDate, type BlogPost } from "@/lib/blog-data"
 import { notFound } from "next/navigation"
 import { PortableText } from "@portabletext/react"
+import { BlogPostActions } from "@/components/blog-post-actions"
+import { RelatedPostActions } from "@/components/related-post-actions"
+import { portableTextComponents } from "@/components/portable-text-components"
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -80,31 +83,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound()
   }
 
-  const components = {
-    block: {
-      normal: ({ children }: any) => (
-        <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg">{children}</p>
-      ),
-      h2: ({ children }: any) => (
-        <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-akiba-pink-500 mb-3 md:mb-4 mt-6 md:mt-8">{children}</h2>
-      ),
-      h3: ({ children }: any) => (
-        <h3 className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 md:mb-3 mt-4 md:mt-6">{children}</h3>
-      ),
-    },
-    list: {
-      bullet: ({ children }: any) => (
-        <ul className="list-disc list-inside mb-4 md:mb-6 space-y-1 md:space-y-2 text-gray-700">{children}</ul>
-      ),
-      number: ({ children }: any) => (
-        <ol className="list-decimal list-inside mb-4 md:mb-6 space-y-1 md:space-y-2 text-gray-700">{children}</ol>
-      ),
-    },
-    listItem: {
-      bullet: ({ children }: any) => <li className="ml-4">{children}</li>,
-      number: ({ children }: any) => <li className="ml-4">{children}</li>,
-    },
-  }
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -180,7 +159,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <div className="max-w-4xl mx-auto">
               <div className="prose prose-sm md:prose-base lg:prose-lg max-w-none animate-fade-in-up delay-400">
                 {post.body ? (
-                  <PortableText value={post.body} components={components} />
+                  <PortableText value={post.body} components={portableTextComponents} />
                 ) : post.excerpt ? (
                   <>
                     <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg font-semibold">
@@ -200,6 +179,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   ))
                 )}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Blog Post Actions - Social Share & Like */}
+        <section className="bg-white py-6 md:py-8">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="max-w-4xl mx-auto">
+              <BlogPostActions
+                postId={post._id}
+                title={post.title}
+                slug={post.slug.current}
+                description={post.excerpt}
+                initialLikeCount={post.likeCount}
+              />
             </div>
           </div>
         </section>
@@ -258,6 +252,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                                 Read More →
                               </span>
                             </div>
+                            <RelatedPostActions
+                              postId={relatedPost._id}
+                              title={relatedPost.title}
+                              slug={relatedPost.slug.current}
+                              description={relatedPost.excerpt}
+                              initialLikeCount={relatedPost.likeCount}
+                            />
                           </div>
                         </Link>
                       </CardContent>
