@@ -1,6 +1,7 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { SetupLikes } from "@/components/setup-likes"
+import { LikeTester } from "@/components/like-tester"
 
 export default function SetupLikesPage() {
   return (
@@ -20,6 +21,10 @@ export default function SetupLikesPage() {
             </div>
             
             <SetupLikes />
+            
+            <div className="mt-12">
+              <LikeTester />
+            </div>
             
             <div className="mt-12 prose prose-lg max-w-none">
               <h2 className="text-2xl font-bold text-akiba-pink-500 mb-4">

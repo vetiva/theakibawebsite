@@ -16,52 +16,32 @@ export function SetupLikes() {
     schemaUpdate: 'pending'
   })
 
+  const [debugInfo, setDebugInfo] = useState<any>(null)
   const [isRunning, setIsRunning] = useState(false)
 
   const runTests = async () => {
     setIsRunning(true)
+    setDebugInfo(null)
     
-    // Test 1: Sanity Connection
     try {
-      const response = await fetch('/api/test-sanity')
-      setTestResults(prev => ({
-        ...prev,
-        sanityConnection: response.ok ? 'success' : 'error'
-      }))
+      // Run comprehensive debug test
+      const debugResponse = await fetch('/api/debug-likes')
+      const debugData = await debugResponse.json()
+      setDebugInfo(debugData)
+      
+      // Update test results based on debug info
+      setTestResults({
+        sanityConnection: debugData.tests?.connection?.status === 'success' ? 'success' : 'error',
+        apiRoutes: debugData.tests?.createPostLike?.status === 'success' ? 'success' : 'error',
+        schemaUpdate: debugData.tests?.likeCountField?.hasField ? 'success' : 'error'
+      })
     } catch (error) {
-      setTestResults(prev => ({
-        ...prev,
-        sanityConnection: 'error'
-      }))
-    }
-
-    // Test 2: API Routes
-    try {
-      const response = await fetch('/api/likes/test-post-id')
-      setTestResults(prev => ({
-        ...prev,
-        apiRoutes: response.ok ? 'success' : 'error'
-      }))
-    } catch (error) {
-      setTestResults(prev => ({
-        ...prev,
-        apiRoutes: 'error'
-      }))
-    }
-
-    // Test 3: Schema Update (try to fetch a post with likeCount)
-    try {
-      const posts = await fetch('/api/test-schema')
-      const data = await posts.json()
-      setTestResults(prev => ({
-        ...prev,
-        schemaUpdate: data.hasLikeCount ? 'success' : 'error'
-      }))
-    } catch (error) {
-      setTestResults(prev => ({
-        ...prev,
+      console.error('Debug test failed:', error)
+      setTestResults({
+        sanityConnection: 'error',
+        apiRoutes: 'error',
         schemaUpdate: 'error'
-      }))
+      })
     }
 
     setIsRunning(false)
@@ -115,6 +95,39 @@ export function SetupLikes() {
             'Test Like Setup'
           )}
         </Button>
+
+        {debugInfo && (
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-semibold mb-3">Debug Information</h3>
+            <div className="space-y-3 text-sm">
+              {debugInfo.tests && Object.entries(debugInfo.tests).map(([testName, result]: [string, any]) => (
+                <div key={testName} className="border-l-2 border-gray-300 pl-3">
+                  <div className="flex items-center gap-2">
+                    {getIcon(result.status === 'success' ? 'success' : result.status === 'error' ? 'error' : 'pending')}
+                    <span className="font-medium capitalize">{testName.replace(/([A-Z])/g, ' $1')}</span>
+                  </div>
+                  {result.error && (
+                    <p className="text-red-600 text-xs mt-1">Error: {result.error}</p>
+                  )}
+                  {result.likely && (
+                    <p className="text-orange-600 text-xs mt-1">Likely issue: {result.likely}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            {debugInfo.summary?.criticalIssues?.length > 0 && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+                <h4 className="font-semibold text-red-800 mb-2">Critical Issues Found:</h4>
+                <ul className="text-sm text-red-700 space-y-1">
+                  {debugInfo.summary.criticalIssues.map((issue: any, index: number) => (
+                    <li key={index}>• {issue.test}: {issue.error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="text-sm text-gray-600 space-y-2">
           <p><strong>Next Steps:</strong></p>

@@ -21,15 +21,20 @@ export async function incrementLike(postId: string): Promise<number> {
     const currentCount = await getLikeCount(postId)
     const newCount = currentCount + 1
     
+    console.log('Updating like count:', { postId, currentCount, newCount })
+    
     // Update the post with new like count
-    await client
+    const result = await client
       .patch(postId)
       .set({ likeCount: newCount })
       .commit()
     
+    console.log('Updated post:', result._id, 'new count:', newCount)
+    
     return newCount
   } catch (error) {
     console.error("Error incrementing like:", error)
+    console.error("Error details:", error instanceof Error ? error.message : error)
     throw error
   }
 }
@@ -71,14 +76,17 @@ export async function hasUserLiked(postId: string, userId: string): Promise<bool
 // Record user like
 export async function recordUserLike(postId: string, userId: string): Promise<void> {
   try {
-    await client.create({
+    console.log('Creating postLike document:', { postId, userId })
+    const result = await client.create({
       _type: 'postLike',
       postId,
       userId,
       likedAt: new Date().toISOString()
     })
+    console.log('Created postLike document:', result._id)
   } catch (error) {
     console.error("Error recording user like:", error)
+    console.error("Error details:", error instanceof Error ? error.message : error)
     throw error
   }
 }
