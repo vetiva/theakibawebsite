@@ -11,6 +11,7 @@ import { PortableText } from "@portabletext/react"
 import { BlogPostActions } from "@/components/blog-post-actions"
 import { RelatedPostActions } from "@/components/related-post-actions"
 import { portableTextComponents } from "@/components/portable-text-components"
+import { BlogTextJustifier } from "@/components/blog-text-justifier"
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -83,10 +84,42 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound()
   }
 
+  // Clean body content function
+  const cleanBodyContent = (body: any[]) => {
+    if (!body) return []
+    
+    return body.filter((block: any) => {
+      // Only keep standard block content types
+      const allowedTypes = ['block', 'image', 'code', 'blockquote']
+      return allowedTypes.includes(block._type) || 
+             (block._type === 'block' && block.style) ||
+             !block._type // fallback for blocks without explicit type
+    }).map((block: any) => {
+      // Clean individual blocks
+      if (block._type === 'block') {
+        return {
+          ...block,
+          // Remove any like-related properties
+          likeCount: undefined,
+          likes: undefined,
+          postLike: undefined
+        }
+      }
+      return block
+    })
+  }
+
+  // Debug: Log post body structure for problematic posts
+  if (post.slug.current.includes('nigeria') || post.slug.current.includes('market-update')) {
+    console.log('Original post body:', JSON.stringify(post.body?.slice(0, 3), null, 2))
+    console.log('Cleaned post body:', JSON.stringify(cleanBodyContent(post.body || []).slice(0, 3), null, 2))
+  }
+
 
 
   return (
     <div className="min-h-screen bg-white">
+      <BlogTextJustifier />
       <Header />
       <main className="overflow-x-hidden">
         {/* Blog Post Header */}
@@ -157,23 +190,26 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <section className="bg-white py-6 md:py-8 lg:py-12">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto">
-              <div className="max-w-none animate-fade-in-up delay-400 font-jakarta-regular leading-relaxed blog-content">
+              <div className="max-w-none animate-fade-in-up delay-400 leading-relaxed blog-content" style={{ fontFamily: 'var(--font-plus-jakarta-sans)', fontWeight: 400 }} data-slug={post.slug.current}>
                 {post.body ? (
-                  <PortableText value={post.body} components={portableTextComponents} />
+                  <PortableText 
+                    value={cleanBodyContent(post.body)} 
+                    components={portableTextComponents} 
+                  />
                 ) : post.excerpt ? (
                   <>
-                    <p className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg font-semibold text-justify">
+                    <p className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg font-semibold text-justify-force" style={{ fontFamily: 'var(--font-plus-jakarta-sans)', textAlign: 'justify', textJustify: 'inter-word', hyphens: 'auto' }}>
                       {post.excerpt}
                     </p>
                     {post.content?.split("\n\n").map((paragraph, index) => (
-                      <p key={index} className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg text-justify">
+                      <p key={index} className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg text-justify-force" style={{ fontFamily: 'var(--font-plus-jakarta-sans)', textAlign: 'justify', textJustify: 'inter-word', hyphens: 'auto' }}>
                         {paragraph}
                       </p>
                     ))}
                   </>
                 ) : (
                   post.content?.split("\n\n").map((paragraph, index) => (
-                    <p key={index} className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg text-justify">
+                    <p key={index} className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg text-justify-force" style={{ fontFamily: 'var(--font-plus-jakarta-sans)', textAlign: 'justify', textJustify: 'inter-word', hyphens: 'auto' }}>
                       {paragraph}
                     </p>
                   ))
@@ -275,7 +311,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   )
 }
 
-// Generate static params for better performance
+// Re-enable static params but with dynamic rendering
 export async function generateStaticParams() {
   try {
     const posts = await getBlogPosts()
@@ -292,8 +328,8 @@ export async function generateStaticParams() {
   }
 }
 
-// Add revalidation to ensure content updates
-export const revalidate = 60 // Revalidate every 60 seconds
+// Force dynamic rendering to ensure all posts use the same rendering path
+export const dynamic = 'force-dynamic'
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: BlogPostPageProps) {

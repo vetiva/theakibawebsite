@@ -727,9 +727,11 @@ html {
   }
 }
 
-/* Blog content specific styles */
+/* Blog content specific styles with stronger justification */
 .blog-content p {
   text-align: justify !important;
+  text-justify: inter-word !important;
+  hyphens: auto !important;
   margin-bottom: 1rem !important;
   line-height: 1.625 !important;
   font-family: var(--font-plus-jakarta-sans) !important;
@@ -752,11 +754,49 @@ html {
 
 .blog-content li {
   text-align: justify !important;
+  text-justify: inter-word !important;
+  hyphens: auto !important;
   line-height: 1.625 !important;
 }
 
 .blog-content blockquote {
   text-align: justify !important;
+  text-justify: inter-word !important;
+  hyphens: auto !important;
+  font-family: var(--font-plus-jakarta-sans) !important;
+}
+
+/* Force justification for all blog text */
+.text-justify-force {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  hyphens: auto !important;
+}
+
+/* Specific fix for problematic posts */
+.blog-content * {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  hyphens: auto !important;
+}
+
+/* Override any conflicting styles */
+[data-slug*="nigeria"] .blog-content p,
+[data-slug*="market-update"] .blog-content p {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  hyphens: auto !important;
+  font-family: var(--font-plus-jakarta-sans) !important;
+}
+
+/* Nuclear option - force all paragraph text to be justified */
+.blog-content p,
+.blog-content li,
+.blog-content blockquote,
+.blog-content div {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  hyphens: auto !important;
   font-family: var(--font-plus-jakarta-sans) !important;
 }
 
