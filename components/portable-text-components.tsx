@@ -5,43 +5,43 @@ import { getImageUrl, getImageBlurUrl } from "@/lib/image-utils"
 export const portableTextComponents = {
   block: {
     normal: ({ children }: any) => (
-      <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg">{children}</p>
+      <p className="text-gray-700 leading-relaxed mb-6 text-base md:text-lg font-jakarta-regular">{children}</p>
     ),
     h1: ({ children }: any) => (
-      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-akiba-pink-500 mb-4 md:mb-6 mt-8 md:mt-10">{children}</h1>
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-jakarta-bold text-akiba-pink-500 mb-6 mt-10 leading-tight">{children}</h1>
     ),
     h2: ({ children }: any) => (
-      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-akiba-pink-500 mb-3 md:mb-4 mt-6 md:mt-8">{children}</h2>
+      <h2 className="text-xl md:text-2xl lg:text-3xl font-jakarta-bold text-akiba-pink-500 mb-4 mt-8 leading-tight">{children}</h2>
     ),
     h3: ({ children }: any) => (
-      <h3 className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 md:mb-3 mt-4 md:mt-6">{children}</h3>
+      <h3 className="text-lg md:text-xl lg:text-2xl font-jakarta-semibold text-gray-900 mb-3 mt-6 leading-tight">{children}</h3>
     ),
     h4: ({ children }: any) => (
-      <h4 className="text-base md:text-lg lg:text-xl font-semibold text-gray-900 mb-2 md:mb-3 mt-3 md:mt-4">{children}</h4>
+      <h4 className="text-base md:text-lg lg:text-xl font-jakarta-semibold text-gray-900 mb-3 mt-4 leading-tight">{children}</h4>
     ),
     h5: ({ children }: any) => (
-      <h5 className="text-sm md:text-base lg:text-lg font-semibold text-gray-900 mb-2 mt-3">{children}</h5>
+      <h5 className="text-sm md:text-base lg:text-lg font-jakarta-medium text-gray-900 mb-2 mt-3 leading-tight">{children}</h5>
     ),
     h6: ({ children }: any) => (
-      <h6 className="text-xs md:text-sm lg:text-base font-semibold text-gray-900 mb-2 mt-3">{children}</h6>
+      <h6 className="text-xs md:text-sm lg:text-base font-jakarta-medium text-gray-900 mb-2 mt-3 leading-tight">{children}</h6>
     ),
     blockquote: ({ children }: any) => (
-      <blockquote className="border-l-4 border-akiba-pink-500 pl-4 md:pl-6 py-2 md:py-3 my-4 md:my-6 bg-gray-50 italic text-gray-700 rounded-r-lg">
+      <blockquote className="border-l-4 border-akiba-pink-500 pl-6 py-4 my-6 bg-gray-50 italic text-gray-700 rounded-r-lg font-jakarta-regular">
         {children}
       </blockquote>
     ),
   },
   list: {
     bullet: ({ children }: any) => (
-      <ul className="list-disc list-inside mb-4 md:mb-6 space-y-1 md:space-y-2 text-gray-700 ml-4">{children}</ul>
+      <ul className="list-disc list-inside mb-6 space-y-2 text-gray-700 ml-4 font-jakarta-regular text-base md:text-lg">{children}</ul>
     ),
     number: ({ children }: any) => (
-      <ol className="list-decimal list-inside mb-4 md:mb-6 space-y-1 md:space-y-2 text-gray-700 ml-4">{children}</ol>
+      <ol className="list-decimal list-inside mb-6 space-y-2 text-gray-700 ml-4 font-jakarta-regular text-base md:text-lg">{children}</ol>
     ),
   },
   listItem: {
-    bullet: ({ children }: any) => <li className="ml-2">{children}</li>,
-    number: ({ children }: any) => <li className="ml-2">{children}</li>,
+    bullet: ({ children }: any) => <li className="ml-2 leading-relaxed">{children}</li>,
+    number: ({ children }: any) => <li className="ml-2 leading-relaxed">{children}</li>,
   },
   types: {
     image: ({ value }: any) => {
@@ -90,10 +90,10 @@ export const portableTextComponents = {
     ),
   },
   marks: {
-    strong: ({ children }: any) => <strong className="font-semibold text-gray-900">{children}</strong>,
-    em: ({ children }: any) => <em className="italic">{children}</em>,
+    strong: ({ children }: any) => <strong className="font-jakarta-semibold text-gray-900">{children}</strong>,
+    em: ({ children }: any) => <em className="italic font-jakarta-regular">{children}</em>,
     code: ({ children }: any) => (
-      <code className="bg-gray-100 text-akiba-pink-600 px-1 py-0.5 rounded text-sm font-mono">
+      <code className="bg-gray-100 text-akiba-pink-600 px-2 py-1 rounded text-sm font-mono">
         {children}
       </code>
     ),
@@ -104,14 +104,14 @@ export const portableTextComponents = {
           href={value?.href}
           target={isExternal ? '_blank' : '_self'}
           rel={isExternal ? 'noopener noreferrer' : undefined}
-          className="text-akiba-pink-500 hover:text-akiba-pink-600 underline transition-colors"
+          className="text-akiba-pink-500 hover:text-akiba-pink-600 underline transition-colors font-jakarta-medium"
         >
           {children}
         </a>
       )
     },
     highlight: ({ children }: any) => (
-      <mark className="bg-yellow-200 px-1 py-0.5 rounded">{children}</mark>
+      <mark className="bg-yellow-200 px-1 py-0.5 rounded font-jakarta-medium">{children}</mark>
     ),
   },
 }

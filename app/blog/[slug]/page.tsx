@@ -157,7 +157,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <section className="bg-white py-6 md:py-8 lg:py-12">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto">
-              <div className="prose prose-sm md:prose-base lg:prose-lg max-w-none animate-fade-in-up delay-400">
+              <div className="max-w-none animate-fade-in-up delay-400">
                 {post.body ? (
                   <PortableText value={post.body} components={portableTextComponents} />
                 ) : post.excerpt ? (
