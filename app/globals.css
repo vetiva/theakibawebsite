@@ -727,6 +727,39 @@ html {
   }
 }
 
+/* Blog content specific styles */
+.blog-content p {
+  text-align: justify !important;
+  margin-bottom: 1rem !important;
+  line-height: 1.625 !important;
+  font-family: var(--font-plus-jakarta-sans) !important;
+}
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4,
+.blog-content h5,
+.blog-content h6 {
+  font-family: var(--font-plus-jakarta-sans) !important;
+  line-height: 1.2 !important;
+}
+
+.blog-content ul,
+.blog-content ol {
+  margin-bottom: 1rem !important;
+}
+
+.blog-content li {
+  text-align: justify !important;
+  line-height: 1.625 !important;
+}
+
+.blog-content blockquote {
+  text-align: justify !important;
+  font-family: var(--font-plus-jakarta-sans) !important;
+}
+
 /* Font utilities */
 .font-jakarta {
   font-family: var(--font-plus-jakarta-sans);
