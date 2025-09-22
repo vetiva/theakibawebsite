@@ -157,23 +157,23 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <section className="bg-white py-6 md:py-8 lg:py-12">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto">
-              <div className="max-w-none animate-fade-in-up delay-400 font-jakarta-regular">
+              <div className="max-w-none animate-fade-in-up delay-400 font-jakarta-regular leading-relaxed">
                 {post.body ? (
                   <PortableText value={post.body} components={portableTextComponents} />
                 ) : post.excerpt ? (
                   <>
-                    <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg font-semibold">
+                    <p className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg font-semibold text-justify">
                       {post.excerpt}
                     </p>
                     {post.content?.split("\n\n").map((paragraph, index) => (
-                      <p key={index} className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg">
+                      <p key={index} className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg text-justify">
                         {paragraph}
                       </p>
                     ))}
                   </>
                 ) : (
                   post.content?.split("\n\n").map((paragraph, index) => (
-                    <p key={index} className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg">
+                    <p key={index} className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg text-justify">
                       {paragraph}
                     </p>
                   ))

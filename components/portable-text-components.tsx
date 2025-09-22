@@ -5,19 +5,19 @@ import { getImageUrl, getImageBlurUrl } from "@/lib/image-utils"
 export const portableTextComponents = {
   block: {
     normal: ({ children }: any) => (
-      <p className="text-gray-700 leading-relaxed mb-6 text-base md:text-lg font-jakarta-regular">{children}</p>
+      <p className="text-gray-700 leading-relaxed mb-4 text-base md:text-lg font-jakarta-regular text-justify">{children}</p>
     ),
     h1: ({ children }: any) => (
-      <h1 className="text-2xl md:text-3xl lg:text-4xl font-jakarta-bold text-akiba-pink-500 mb-6 mt-10 leading-tight">{children}</h1>
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-jakarta-bold text-akiba-pink-500 mb-4 mt-8 leading-tight">{children}</h1>
     ),
     h2: ({ children }: any) => (
-      <h2 className="text-xl md:text-2xl lg:text-3xl font-jakarta-bold text-akiba-pink-500 mb-4 mt-8 leading-tight">{children}</h2>
+      <h2 className="text-xl md:text-2xl lg:text-3xl font-jakarta-bold text-akiba-pink-500 mb-3 mt-6 leading-tight">{children}</h2>
     ),
     h3: ({ children }: any) => (
-      <h3 className="text-lg md:text-xl lg:text-2xl font-jakarta-semibold text-gray-900 mb-3 mt-6 leading-tight">{children}</h3>
+      <h3 className="text-lg md:text-xl lg:text-2xl font-jakarta-semibold text-gray-900 mb-2 mt-5 leading-tight">{children}</h3>
     ),
     h4: ({ children }: any) => (
-      <h4 className="text-base md:text-lg lg:text-xl font-jakarta-semibold text-gray-900 mb-3 mt-4 leading-tight">{children}</h4>
+      <h4 className="text-base md:text-lg lg:text-xl font-jakarta-semibold text-gray-900 mb-2 mt-4 leading-tight">{children}</h4>
     ),
     h5: ({ children }: any) => (
       <h5 className="text-sm md:text-base lg:text-lg font-jakarta-medium text-gray-900 mb-2 mt-3 leading-tight">{children}</h5>
@@ -26,22 +26,22 @@ export const portableTextComponents = {
       <h6 className="text-xs md:text-sm lg:text-base font-jakarta-medium text-gray-900 mb-2 mt-3 leading-tight">{children}</h6>
     ),
     blockquote: ({ children }: any) => (
-      <blockquote className="border-l-4 border-akiba-pink-500 pl-6 py-4 my-6 bg-gray-50 italic text-gray-700 rounded-r-lg font-jakarta-regular">
+      <blockquote className="border-l-4 border-akiba-pink-500 pl-6 py-3 my-4 bg-gray-50 italic text-gray-700 rounded-r-lg font-jakarta-regular text-justify">
         {children}
       </blockquote>
     ),
   },
   list: {
     bullet: ({ children }: any) => (
-      <ul className="list-disc list-inside mb-6 space-y-2 text-gray-700 ml-4 font-jakarta-regular text-base md:text-lg">{children}</ul>
+      <ul className="list-disc list-inside mb-4 space-y-1 text-gray-700 ml-4 font-jakarta-regular text-base md:text-lg">{children}</ul>
     ),
     number: ({ children }: any) => (
-      <ol className="list-decimal list-inside mb-6 space-y-2 text-gray-700 ml-4 font-jakarta-regular text-base md:text-lg">{children}</ol>
+      <ol className="list-decimal list-inside mb-4 space-y-1 text-gray-700 ml-4 font-jakarta-regular text-base md:text-lg">{children}</ol>
     ),
   },
   listItem: {
-    bullet: ({ children }: any) => <li className="ml-2 leading-relaxed">{children}</li>,
-    number: ({ children }: any) => <li className="ml-2 leading-relaxed">{children}</li>,
+    bullet: ({ children }: any) => <li className="ml-2 leading-relaxed text-justify">{children}</li>,
+    number: ({ children }: any) => <li className="ml-2 leading-relaxed text-justify">{children}</li>,
   },
   types: {
     image: ({ value }: any) => {
