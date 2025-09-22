@@ -7,6 +7,8 @@ export const client = createClient({
   apiVersion: "2024-01-01",
   token: "skjeKxpTuA6jXtKpFG80EqWOOWkXeOIqy16NHgJuGWsiBVlOL629W5RisqZuflHS8HvEqKZWRE75DQPqIdw5WfpLh4GBqRROpIzH0ohZbyIL1T1gibcGQjiFkco1dtSJUntKgVThTSsjT3lANnIgGkrqYgBmQe5OiaZY2CUkuh7BC7lNIxPY",
   useCdn: true, // Enable CDN for better performance
+  perspective: 'published', // Ensure we get published content
+  stega: false, // Disable stega for production
 })
 
 const builder = imageUrlBuilder(client)
