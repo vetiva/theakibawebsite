@@ -14,6 +14,9 @@ interface BlogPageProps {
   searchParams: Promise<{ page?: string }>
 }
 
+// Add revalidation to ensure content updates
+export const revalidate = 60 // Revalidate every 60 seconds
+
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   // Await the searchParams promise first
   const params = await searchParams

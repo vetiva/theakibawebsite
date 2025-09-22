@@ -292,6 +292,9 @@ export async function generateStaticParams() {
   }
 }
 
+// Add revalidation to ensure content updates
+export const revalidate = 60 // Revalidate every 60 seconds
+
 // Generate metadata for SEO
 export async function generateMetadata({ params }: BlogPostPageProps) {
   // Await the params promise first
