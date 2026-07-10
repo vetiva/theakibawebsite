@@ -1,5 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
+import Script from "next/script"
 import { Plus_Jakarta_Sans, Pacifico } from "next/font/google"
 import "./globals.css"
 
@@ -32,6 +33,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${pacifico.variable}`}>
+      <head>
+        <Script
+          id="google-gtag"
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-B0115B6YYR"
+        />
+        <Script id="google-gtag-config" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-B0115B6YYR');`}
+        </Script>
+      </head>
       <body className={plusJakartaSans.className}>{children}</body>
     </html>
   )
