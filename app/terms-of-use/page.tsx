@@ -64,9 +64,9 @@ function LinkedText({ text }: { text: string }) {
 
 function ClauseBlock({ clause }: { clause: Clause }) {
   return (
-    <div className="mb-5 last:mb-0">
+    <div className="mb-5 last:mb-0 ml-14">
       <p className="text-gray-700 font-jakarta-regular leading-relaxed whitespace-pre-line">
-        <span className="font-jakarta-semibold text-gray-900 mr-2">{clause.label}</span>
+        <span className="font-jakarta-semibold text-akiba-pink-600 mr-2">{clause.label}</span>
         {clause.paragraphs?.map((paragraph, index) => (
           <span key={index}>
             {index > 0 && "\n\n"}
@@ -75,7 +75,7 @@ function ClauseBlock({ clause }: { clause: Clause }) {
         ))}
       </p>
       {clause.bullets && (
-        <ul className="mt-3 ml-8 list-disc space-y-1 text-gray-700 font-jakarta-regular leading-relaxed">
+        <ul className="mt-3 ml-8 list-disc space-y-1 text-gray-700 font-jakarta-regular leading-relaxed marker:text-akiba-pink-600">
           {clause.bullets.map((item) => (
             <li key={item}>
               <LinkedText text={item} />
@@ -84,10 +84,15 @@ function ClauseBlock({ clause }: { clause: Clause }) {
         </ul>
       )}
       {clause.letters && (
-        <ol className="mt-3 ml-8 list-[lower-alpha] space-y-1 text-gray-700 font-jakarta-regular leading-relaxed pl-1">
-          {clause.letters.map((item) => (
-            <li key={item} className="pl-1">
-              <LinkedText text={item} />
+        <ol className="mt-3 ml-8 list-none space-y-1 text-gray-700 font-jakarta-regular leading-relaxed">
+          {clause.letters.map((item, index) => (
+            <li key={item} className="flex gap-2">
+              <span className="font-jakarta-semibold text-akiba-pink-600 shrink-0">
+                {String.fromCharCode(97 + index)}.
+              </span>
+              <span>
+                <LinkedText text={item} />
+              </span>
             </li>
           ))}
         </ol>
@@ -140,9 +145,12 @@ export default function TermsOfUse() {
                 <div className="space-y-10">
                   {termsSections.map((section) => (
                     <section key={section.id} id={section.id}>
-                      <h2 className="text-xl font-jakarta-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">
-                        {section.number}. {section.title}
-                      </h2>
+                      <div className="flex items-start space-x-4 mb-4">
+                        <div className="flex-shrink-0 w-10 h-10 bg-akiba-pink-600/10 rounded-full flex items-center justify-center mt-0.5">
+                          <span className="text-akiba-pink-600 font-jakarta-semibold text-sm">{section.number}</span>
+                        </div>
+                        <h2 className="text-xl font-jakarta-semibold text-gray-900 pt-1">{section.title}</h2>
+                      </div>
                       {section.intro && (
                         <p className="text-gray-700 font-jakarta-regular leading-relaxed mb-4">{section.intro}</p>
                       )}
@@ -172,10 +180,15 @@ export default function TermsOfUse() {
                   <p className="text-gray-700 font-jakarta-regular leading-relaxed mb-4">
                     <LinkedText text={acknowledgement.intro} />
                   </p>
-                  <ol className="list-decimal pl-6 space-y-2 text-gray-700 font-jakarta-regular leading-relaxed">
-                    {acknowledgement.items.map((item) => (
-                      <li key={item} className="pl-1">
-                        <LinkedText text={item} />
+                  <ol className="list-none space-y-3">
+                    {acknowledgement.items.map((item, index) => (
+                      <li key={item} className="flex items-start space-x-4">
+                        <div className="flex-shrink-0 w-10 h-10 bg-akiba-pink-600/10 rounded-full flex items-center justify-center">
+                          <span className="text-akiba-pink-600 font-jakarta-semibold text-sm">{index + 1}</span>
+                        </div>
+                        <p className="text-gray-700 font-jakarta-regular leading-relaxed pt-1.5">
+                          <LinkedText text={item} />
+                        </p>
                       </li>
                     ))}
                   </ol>
